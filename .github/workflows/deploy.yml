@@ -34,6 +34,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify build output
+        run: |
+          ls -la ./dist
+          head -c 200 ./dist/index.html
+          echo
+          touch ./dist/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
