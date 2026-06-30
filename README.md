@@ -2,27 +2,19 @@
 
 Minimal 3D PDF flipbook. Renders a PDF with realistic page-turn animation.
 
-## Two ways to use it
-
-### Option A — Paste into Edupage (recommended, no CORS issues)
-
-The app can be built as a single self-contained HTML file. Paste it directly into Edupage's **Wstaw kod HTML** dialog. Because it runs on the Edupage origin, it can fetch Edupage PDFs without CORS problems.
-
-1. Build the edupage-ready file for your PDF:
-
-```bash
-PDF_URL="https://cloud-3.edupage.org/cloud/1_Bujak.pdf?z=..." npm run build:edupage
-```
-
-2. Open `embed/edupage-flipbook.html` (or `dist/edupage-flipbook.html`), copy the entire content, and paste it into Edupage.
-
-The generated file already has your PDF URL hardcoded.
-
-### Option B — Host on GitHub Pages and embed via iframe
+## Usage
 
 ```
 https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf
 ```
+
+With a custom CORS proxy:
+
+```
+https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf&proxy=https://your-proxy.com/?url=
+```
+
+## Embed as iframe
 
 ```html
 <iframe
@@ -34,34 +26,38 @@ https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf
 </iframe>
 ```
 
-This only works if the PDF server allows cross-origin requests. Edupage PDFs currently block this.
-
-## Deploy to GitHub Pages (easiest method)
+## Deploy to GitHub Pages
 
 1. Push this repo to GitHub.
 2. Go to **Settings → Pages**.
 3. Under **Build and deployment**:
    - Source: **Deploy from a branch**
    - Branch: **main**
-   - Folder: **/docs**
+   - Folder: **/(root)**
 4. Click **Save**.
 5. Wait ~1 minute, then visit `https://YOUR_USERNAME.github.io/pdf-flipbook/`.
 
-The `docs/` folder already contains the built `index.html`. No GitHub Actions needed.
+The root `index.html` is the production build and works with the default Pages setting.
+
+### Alternative: /docs folder
+
+If you prefer, you can also set the folder to `/docs`. Both contain the same built file.
 
 ### Alternative: GitHub Actions
 
-If you prefer Actions, select **GitHub Actions** as the Pages source and trigger the workflow in the **Actions** tab.
+Select **GitHub Actions** as the Pages source and trigger the workflow in the **Actions** tab.
 
-## CORS note
+## Edupage embed (bypasses CORS)
 
-Edupage PDFs send:
+For Edupage PDFs, paste the single-file HTML directly into Edupage's HTML dialog.
 
-```http
-Access-Control-Allow-Origin: https://olaszkola.edupage.org
+Build it for your PDF:
+
+```bash
+PDF_URL="https://cloud-3.edupage.org/cloud/..." npm run build:edupage
 ```
 
-Because the GitHub Pages version runs on `virssello.github.io`, the browser blocks the PDF download. Either paste the single-file HTML into Edupage (Option A) or ask your Edupage admin to add your GitHub Pages domain to the CORS allowlist.
+Then use `embed/edupage-flipbook.html`.
 
 ## Local development
 
@@ -69,6 +65,8 @@ Because the GitHub Pages version runs on `virssello.github.io`, the browser bloc
 npm install
 npm run dev
 ```
+
+The dev server opens `dev.html`.
 
 Build:
 
@@ -81,3 +79,7 @@ Build a single-file Edupage embed:
 ```bash
 PDF_URL="https://example.com/file.pdf" npm run build:edupage
 ```
+
+## CORS note
+
+Edupage PDFs send `Access-Control-Allow-Origin: https://olaszkola.edupage.org`. The GitHub Pages version cannot fetch them directly because of browser CORS rules. Use the Edupage paste-in HTML file for those PDFs.

@@ -10,6 +10,11 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    rollupOptions: {
+      input: './dev.html',
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

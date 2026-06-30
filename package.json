@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build && cp dist/index.html docs/index.html && touch docs/.nojekyll",
+    "dev": "vite --open /dev.html",
+    "build": "tsc -b && vite build && mv dist/dev.html dist/index.html && cp dist/index.html docs/index.html && cp dist/index.html index.html && touch docs/.nojekyll",
     "build:edupage": "npm run build && PDF_URL=${PDF_URL} node scripts/build-edupage.js",
     "lint": "eslint .",
     "preview": "vite preview"
