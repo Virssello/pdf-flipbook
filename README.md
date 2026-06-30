@@ -36,15 +36,22 @@ https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf
 
 This only works if the PDF server allows cross-origin requests. Edupage PDFs currently block this.
 
-## Deploy to GitHub Pages
+## Deploy to GitHub Pages (easiest method)
 
 1. Push this repo to GitHub.
 2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, select **GitHub Actions** as the source.
-4. Push any change to `main` (or trigger the workflow manually from the **Actions** tab).
-5. Wait ~1–2 minutes, then visit `https://YOUR_USERNAME.github.io/pdf-flipbook/`.
+3. Under **Build and deployment**:
+   - Source: **Deploy from a branch**
+   - Branch: **main**
+   - Folder: **/docs**
+4. Click **Save**.
+5. Wait ~1 minute, then visit `https://YOUR_USERNAME.github.io/pdf-flipbook/`.
 
-If you see a 404 or the page tries to load `/src/main.tsx`, it means Pages is still set to "Deploy from a branch" instead of GitHub Actions. Change the source to GitHub Actions.
+The `docs/` folder already contains the built `index.html`. No GitHub Actions needed.
+
+### Alternative: GitHub Actions
+
+If you prefer Actions, select **GitHub Actions** as the Pages source and trigger the workflow in the **Actions** tab.
 
 ## CORS note
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && cp dist/index.html docs/index.html && touch docs/.nojekyll",
     "build:edupage": "npm run build && PDF_URL=${PDF_URL} node scripts/build-edupage.js",
     "lint": "eslint .",
     "preview": "vite preview"
