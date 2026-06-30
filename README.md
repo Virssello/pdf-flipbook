@@ -1,34 +1,28 @@
 # PDF Flipbook Viewer
 
-A static, embeddable PDF flipbook viewer built with React, Vite, PDF.js, and `page-flip`. Host it on GitHub Pages and embed it anywhere via an `<iframe>`.
+Minimal embeddable PDF flipbook. Pass any PDF URL via `?pdf=` and it renders as a 3D book.
 
-## Live usage
-
-Load any PDF via the `?pdf=` URL parameter:
+## Usage
 
 ```
-https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/document.pdf
+https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf
 ```
 
-For URLs with special characters, base64-encode the URL and use `?pdf_b64=`:
+With a custom CORS proxy (needed if the PDF server blocks cross-origin requests):
 
 ```
-https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf_b64=BASE64_ENCODED_URL
+https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf&proxy=https://your-proxy.com/?url=
 ```
 
 ## Embed as iframe
-
-Paste this into your CMS/HTML:
 
 ```html
 <iframe
   width="100%"
   height="700"
   src="https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=YOUR_PDF_URL"
-  title="PDF Flipbook"
   frameborder="0"
-  allowfullscreen
-  style="border: 1px solid #ddd; border-radius: 8px;">
+  allowfullscreen>
 </iframe>
 ```
 
@@ -36,14 +30,18 @@ Paste this into your CMS/HTML:
 
 1. Push this repo to GitHub.
 2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, select **GitHub Actions** as the source.
-4. The included workflow (`.github/workflows/deploy.yml`) will build and deploy automatically on every push to `main`.
+3. Select **GitHub Actions** as the source.
+4. The workflow in `.github/workflows/deploy.yml` deploys automatically on every push to `main`.
 
-Your site will be available at:
+## Important: CORS
 
-```
-https://YOUR_USERNAME.github.io/pdf-flipbook/
-```
+This viewer runs entirely in the browser. If the PDF server does not send `Access-Control-Allow-Origin: *` (or your GitHub Pages domain), the browser will block the download.
+
+Options if you see a CORS error:
+
+- Host the flipbook on the same domain as the PDF.
+- Add your GitHub Pages domain to the PDF server's CORS allowlist.
+- Use a CORS proxy you control and pass it via `?proxy=`.
 
 ## Local development
 
@@ -52,20 +50,8 @@ npm install
 npm run dev
 ```
 
-## Build
+Build:
 
 ```bash
 npm run build
 ```
-
-Static output is written to `./dist`.
-
-## Features
-
-- 3D page-flip animation
-- PDF loading from URL parameter or base64 URL
-- CORS proxy fallback for external PDFs
-- Two-page spread on desktop, single page on mobile
-- Previous/Next navigation, keyboard arrow keys, page jump
-- Zoom, fullscreen, and download controls
-- iframe-friendly, fills the container with no body scroll

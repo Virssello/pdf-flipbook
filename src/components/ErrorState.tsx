@@ -1,94 +1,80 @@
-import { AlertTriangle, RefreshCw, ExternalLink } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 interface ErrorStateProps {
   error: string;
   pdfUrl: string;
+  currentProxy: string;
   onRetry: (proxyIndex: number) => void;
+  onSetProxy: (proxyUrl: string) => void;
 }
 
-const PROXIES = [
-  { name: 'AllOrigins', url: 'https://api.allorigins.win/raw?url=' },
-  { name: 'CORSProxy.io', url: 'https://corsproxy.io/?' },
-  { name: 'Direct (no proxy)', url: '' },
+const BUILT_IN_PROXIES = [
+  { name: 'Direct', value: '' },
+  { name: 'corsproxy.io', value: 'https://corsproxy.io/?' },
+  { name: 'allorigins', value: 'https://api.allorigins.win/raw?url=' },
 ];
 
-export function ErrorState({ error, pdfUrl, onRetry }: ErrorStateProps) {
-  const [proxyIndex, setProxyIndex] = useState(0);
-  const [showHelp, setShowHelp] = useState(false);
-
-  const isCorsError = error.toLowerCase().includes('cors') ||
+export function ErrorState({
+  error,
+  pdfUrl,
+  currentProxy,
+  onRetry,
+  onSetProxy,
+}: ErrorStateProps) {
+  const [customProxy, setCustomProxy] = useState('');
+  const isCorsError =
+    error.toLowerCase().includes('cors') ||
     error.toLowerCase().includes('network') ||
-    error.toLowerCase().includes('fetch');
+    error.toLowerCase().includes('failed to fetch');
+
+  const currentIndex = BUILT_IN_PROXIES.findIndex((p) => p.value === currentProxy);
+  const nextIndex = (currentIndex + 1) % BUILT_IN_PROXIES.length;
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full bg-gray-950 text-white px-6">
-      <AlertTriangle className="w-14 h-14 text-amber-400 mb-5" />
-      <h2 className="text-xl font-semibold mb-2">Failed to Load PDF</h2>
-      <p className="text-sm text-gray-400 mb-6 max-w-md text-center">{error}</p>
+    <div className="flex flex-col items-center justify-center w-full h-full bg-gray-950 text-white px-6 text-center">
+      <AlertTriangle className="w-10 h-10 text-amber-400 mb-4" />
+      <h2 className="text-lg font-medium mb-2">Could not load PDF</h2>
+      <p className="text-sm text-white/50 mb-6 max-w-md break-all">
+        {isCorsError
+          ? 'The PDF server is blocking cross-origin requests. Try a different proxy or host the PDF on a server with CORS enabled.'
+          : error}
+      </p>
 
-      {isCorsError && (
-        <div className="w-full max-w-md mb-6">
-          <button
-            onClick={() => setShowHelp(!showHelp)}
-            className="text-sm text-emerald-400 hover:text-emerald-300 underline mb-3"
-          >
-            {showHelp ? 'Hide' : 'Show'} CORS help
-          </button>
-
-          {showHelp && (
-            <div className="bg-gray-900 rounded-lg p-4 text-sm text-gray-300 space-y-3">
-              <p>
-                Browsers block cross-origin requests for security. Try these solutions:
-              </p>
-              <ol className="list-decimal list-inside space-y-2 text-gray-400">
-                <li>Use a proxy server (select below)</li>
-                <li>Host the PDF on the same domain</li>
-                <li>Enable CORS on your server</li>
-              </ol>
-              <p className="text-xs text-gray-500 pt-1">
-                URL: <span className="font-mono break-all">{pdfUrl}</span>
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-        <div className="flex gap-2">
-          {PROXIES.map((proxy, i) => (
-            <button
-              key={proxy.name}
-              onClick={() => setProxyIndex(i)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                proxyIndex === i
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              {proxy.name}
-            </button>
-          ))}
-        </div>
-
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <button
-          onClick={() => onRetry(proxyIndex)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+          onClick={() => onRetry(nextIndex)}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
-          Retry
+          Try {BUILT_IN_PROXIES[nextIndex].name}
         </button>
       </div>
 
-      <a
-        href={pdfUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 mt-4 text-sm text-gray-400 hover:text-white transition-colors"
-      >
-        <ExternalLink className="w-4 h-4" />
-        Open PDF directly
-      </a>
+      <div className="w-full max-w-sm">
+        <p className="text-xs text-white/40 mb-2">Or enter your own CORS proxy:</p>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={customProxy}
+            onChange={(e) => setCustomProxy(e.target.value)}
+            placeholder="https://your-proxy.com/?url="
+            className="flex-1 bg-white/10 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:border-white/40 focus:outline-none"
+          />
+          <button
+            onClick={() => customProxy && onSetProxy(customProxy)}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
+          >
+            Use
+          </button>
+        </div>
+      </div>
+
+      {pdfUrl && (
+        <p className="text-xs text-white/30 mt-6 max-w-md break-all">
+          URL: {pdfUrl}
+        </p>
+      )}
     </div>
   );
 }

@@ -7,93 +7,91 @@ import { EmptyState } from './components/EmptyState';
 type ViewState =
   | { type: 'empty' }
   | { type: 'loading'; current: number; total: number }
-  | { type: 'error'; error: string }
+  | { type: 'error'; error: string; pdfUrl: string }
   | { type: 'loaded'; pdfUrl: string };
 
-const PROXY_LIST = [
+const DEFAULT_PROXIES = [
   '', // direct
-  'https://api.allorigins.win/raw?url=',
   'https://corsproxy.io/?',
+  'https://api.allorigins.win/raw?url=',
 ];
 
-function getProxyUrl(url: string, proxyIndex: number): string {
-  const proxy = PROXY_LIST[proxyIndex] || '';
-  return proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+function applyProxy(url: string, proxy: string): string {
+  if (!proxy) return url;
+  return `${proxy}${encodeURIComponent(url)}`;
 }
 
 function App() {
   const [view, setView] = useState<ViewState>({ type: 'empty' });
   const [rawPdfUrl, setRawPdfUrl] = useState('');
+  const [proxy, setProxy] = useState('');
   const viewerKey = useRef(0);
 
-  // Load PDF directly — no pre-checks, fully automatic
-  const loadPdf = useCallback((url: string, proxyIdx: number = 1) => {
+  const loadPdf = useCallback((url: string, proxyUrl: string = '') => {
     setRawPdfUrl(url);
+    setProxy(proxyUrl);
     viewerKey.current += 1;
-    const proxiedUrl = getProxyUrl(url, proxyIdx);
-    // Go straight to loading — PDF.js handles errors internally
     setView({ type: 'loading', current: 0, total: 1 });
-    // Small delay then mount the viewer — it handles its own loading
     setTimeout(() => {
-      setView({ type: 'loaded', pdfUrl: proxiedUrl });
-    }, 100);
+      setView({ type: 'loaded', pdfUrl: applyProxy(url, proxyUrl) });
+    }, 50);
   }, []);
 
-  // Read URL parameter on mount — auto-load if present
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pdfParam = params.get('pdf');
     const pdfB64 = params.get('pdf_b64');
+    const proxyParam = params.get('proxy') || '';
 
     if (pdfParam) {
-      loadPdf(pdfParam, 1);
+      loadPdf(pdfParam, proxyParam);
     } else if (pdfB64) {
       try {
-        const decoded = atob(pdfB64);
-        loadPdf(decoded, 1);
+        loadPdf(atob(pdfB64), proxyParam);
       } catch {
-        setView({ type: 'error', error: 'Invalid base64 PDF URL' });
+        setView({ type: 'error', error: 'Invalid base64 PDF URL', pdfUrl: '' });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleError = useCallback((error: string) => {
-    setView({ type: 'error', error });
-  }, []);
+    if (view.type === 'loaded') {
+      setView({ type: 'error', error, pdfUrl: rawPdfUrl });
+    }
+  }, [rawPdfUrl, view.type]);
 
   const handleLoadingProgress = useCallback((current: number, total: number) => {
     setView({ type: 'loading', current, total });
   }, []);
 
-  const handleRetry = useCallback((newProxyIndex: number) => {
+  const handleRetry = useCallback((proxyIndex: number) => {
+    if (!rawPdfUrl) return;
+    const nextProxy = DEFAULT_PROXIES[proxyIndex] ?? '';
+    loadPdf(rawPdfUrl, nextProxy);
+  }, [rawPdfUrl, loadPdf]);
+
+  const handleSetProxy = useCallback((proxyUrl: string) => {
     if (rawPdfUrl) {
-      loadPdf(rawPdfUrl, newProxyIndex);
+      loadPdf(rawPdfUrl, proxyUrl);
     }
   }, [rawPdfUrl, loadPdf]);
 
-  const handleLoadPdf = useCallback((url: string) => {
-    loadPdf(url, 1);
-  }, [loadPdf]);
-
   switch (view.type) {
     case 'empty':
-      return <EmptyState onLoadPdf={handleLoadPdf} />;
+      return <EmptyState onLoadPdf={loadPdf} />;
 
     case 'loading':
-      return (
-        <LoadingState
-          current={view.current}
-          total={view.total}
-        />
-      );
+      return <LoadingState current={view.current} total={view.total} />;
 
     case 'error':
       return (
         <ErrorState
           error={view.error}
-          pdfUrl={rawPdfUrl}
+          pdfUrl={view.pdfUrl}
+          currentProxy={proxy}
           onRetry={handleRetry}
+          onSetProxy={handleSetProxy}
         />
       );
 
@@ -102,6 +100,7 @@ function App() {
         <FlipbookViewer
           key={viewerKey.current}
           pdfUrl={view.pdfUrl}
+          rawPdfUrl={rawPdfUrl}
           onError={handleError}
           onLoadingProgress={handleLoadingProgress}
         />
