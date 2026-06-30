@@ -92,7 +92,7 @@ export function FlipbookViewer({
         onLoadingProgress(0, 1);
 
         pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js';
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs';
 
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
         const pdf: PDFDocumentProxy = await loadingTask.promise;
