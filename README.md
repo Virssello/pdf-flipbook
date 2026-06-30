@@ -1,20 +1,28 @@
 # PDF Flipbook Viewer
 
-Minimal embeddable PDF flipbook. Pass any PDF URL via `?pdf=` and it renders as a 3D book.
+Minimal 3D PDF flipbook. Renders a PDF with realistic page-turn animation.
 
-## Usage
+## Two ways to use it
+
+### Option A — Paste into Edupage (recommended, no CORS issues)
+
+The app can be built as a single self-contained HTML file. Paste it directly into Edupage's **Wstaw kod HTML** dialog. Because it runs on the Edupage origin, it can fetch Edupage PDFs without CORS problems.
+
+1. Build the edupage-ready file for your PDF:
+
+```bash
+PDF_URL="https://cloud-3.edupage.org/cloud/1_Bujak.pdf?z=..." npm run build:edupage
+```
+
+2. Open `embed/edupage-flipbook.html` (or `dist/edupage-flipbook.html`), copy the entire content, and paste it into Edupage.
+
+The generated file already has your PDF URL hardcoded.
+
+### Option B — Host on GitHub Pages and embed via iframe
 
 ```
 https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf
 ```
-
-With a custom CORS proxy (needed if the PDF server blocks cross-origin requests):
-
-```
-https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf&proxy=https://your-proxy.com/?url=
-```
-
-## Embed as iframe
 
 ```html
 <iframe
@@ -26,6 +34,8 @@ https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf&p
 </iframe>
 ```
 
+This only works if the PDF server allows cross-origin requests. Edupage PDFs currently block this.
+
 ## Deploy to GitHub Pages
 
 1. Push this repo to GitHub.
@@ -33,15 +43,15 @@ https://YOUR_USERNAME.github.io/pdf-flipbook/?pdf=https://example.com/file.pdf&p
 3. Select **GitHub Actions** as the source.
 4. The workflow in `.github/workflows/deploy.yml` deploys automatically on every push to `main`.
 
-## Important: CORS
+## CORS note
 
-This viewer runs entirely in the browser. If the PDF server does not send `Access-Control-Allow-Origin: *` (or your GitHub Pages domain), the browser will block the download.
+Edupage PDFs send:
 
-Options if you see a CORS error:
+```http
+Access-Control-Allow-Origin: https://olaszkola.edupage.org
+```
 
-- Host the flipbook on the same domain as the PDF.
-- Add your GitHub Pages domain to the PDF server's CORS allowlist.
-- Use a CORS proxy you control and pass it via `?proxy=`.
+Because the GitHub Pages version runs on `virssello.github.io`, the browser blocks the PDF download. Either paste the single-file HTML into Edupage (Option A) or ask your Edupage admin to add your GitHub Pages domain to the CORS allowlist.
 
 ## Local development
 
@@ -54,4 +64,10 @@ Build:
 
 ```bash
 npm run build
+```
+
+Build a single-file Edupage embed:
+
+```bash
+PDF_URL="https://example.com/file.pdf" npm run build:edupage
 ```

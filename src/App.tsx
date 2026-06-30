@@ -43,8 +43,13 @@ function App() {
     const pdfB64 = params.get('pdf_b64');
     const proxyParam = params.get('proxy') || '';
 
-    if (pdfParam) {
-      loadPdf(pdfParam, proxyParam);
+    // Allow hardcoded PDF URL for pasted HTML deployments
+    const globalUrl = (window as unknown as { PDF_FLIPBOOK_URL?: string }).PDF_FLIPBOOK_URL;
+
+    const targetUrl = pdfParam || globalUrl || (pdfB64 ? atob(pdfB64) : null);
+
+    if (targetUrl) {
+      loadPdf(targetUrl, proxyParam);
     } else if (pdfB64) {
       try {
         loadPdf(atob(pdfB64), proxyParam);
