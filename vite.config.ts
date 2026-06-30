@@ -4,7 +4,6 @@ import { defineConfig } from "vite"
 import { inspectAttr } from 'plugin-inspect-react-code'
 import { viteSingleFile } from "vite-plugin-singlefile"
 
-// https://vite.dev/config/
 export default defineConfig({
   base: './',
   plugins: [inspectAttr(), react(), viteSingleFile()],

@@ -1,23 +1,9 @@
 #!/usr/bin/env node
-/**
- * Build a single self-contained HTML file for embedding directly into Edupage.
- *
- * Usage:
- *   PDF_URL="https://cloud-3.edupage.org/cloud/..." node scripts/build-edupage.js
- *
- * Output:
- *   dist/edupage-flipbook.html
- *
- * This file can be pasted into Edupage's "Wstaw kod HTML" dialog.
- * Because it runs on the Edupage origin, it bypasses CORS restrictions.
- */
-
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const pdfUrl = process.env.PDF_URL;
 
 if (!pdfUrl) {
@@ -35,11 +21,9 @@ if (!fs.existsSync(inputPath)) {
 }
 
 let html = fs.readFileSync(inputPath, 'utf-8');
-
 const escapedUrl = JSON.stringify(pdfUrl);
 const injection = `<script>window.PDF_FLIPBOOK_URL=${escapedUrl};</script>`;
 
-// Insert before the closing </head> tag
 if (!html.includes('</head>')) {
   console.error('Error: Could not find </head> tag in dist/index.html.');
   process.exit(1);
